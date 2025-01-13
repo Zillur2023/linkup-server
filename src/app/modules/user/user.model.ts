@@ -1,9 +1,11 @@
 import { Schema, model } from "mongoose";
+// import { TUser, UserModel } from "./user.interface";
 import config from "../../config";
 import bcrypt from "bcrypt";
 import { IUser, IUserModel } from "./user.interface";
 
 export const userSchema = new Schema<IUser, IUserModel>(
+  // const UserSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
