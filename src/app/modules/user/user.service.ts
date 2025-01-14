@@ -35,7 +35,7 @@ const getAllUserFromDB = async () => {
   },
   {
     $lookup: {
-      from: "users", // Collection name for upvotes
+      from: "users", // Collection name for likes
       localField: "following",
       foreignField: "_id",
       as: "following",
