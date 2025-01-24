@@ -11,19 +11,21 @@ const loginUser = catchAsync(async (req, res) => {
     const result = await AuthServices.loginUser(req.body);
     const { user,refreshToken, accessToken } = result;
   
-    // res.cookie('accessToken', accessToken, {
-    //   secure: config.NODE_ENV === 'production',
-    //   httpOnly: true,
-    //   sameSite: 'none',
-    //   maxAge: 1000 * 60 * 60 * 24 * 365,
-    // });
-    // res.cookie('refreshToken', refreshToken, {
-    //   secure: config.NODE_ENV === 'production',
-    //   httpOnly: true,
-    //   sameSite: 'none',
-    //   maxAge: 1000 * 60 * 60 * 24 * 365,
-    // });
-
+    res.cookie('accessToken', accessToken, {
+      // secure: config.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'strict',
+      // maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
+    res.cookie('refreshToken', refreshToken, {
+      // secure: config.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: "strict",
+      // maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
+  
+    console.log("logiN res", res)
+    console.log("logiN req", req)
   
     sendResponse(res, {
       statusCode: httpStatus.OK,

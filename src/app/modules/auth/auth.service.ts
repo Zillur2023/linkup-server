@@ -42,7 +42,7 @@ const loginUser = async (payload: ILoginUser) => {
 
   const jwtPayload = {
     // userId: user.id,
-    // _id: isUserExist._id,
+    _id: isUserExist._id,
     email: isUserExist.email,
     role: isUserExist.role,
   };

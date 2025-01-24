@@ -2,9 +2,7 @@ import { Types } from "mongoose";
 
 export interface IPost {
   _id?: string;
-  title?: string;
   content?: string;
-  category?: string;
   isPremium?: boolean; // Optional because it has a default value
   image?: string; // Optional
   likes?: Types.ObjectId[]; // Optional, defaults to 0
