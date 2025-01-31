@@ -7,7 +7,7 @@ router.post('/create', CommentControllers.createComment)
 
 router.get('/all-comment/:postId', CommentControllers.getAllComment)
 
-router.put('/update/:id', CommentControllers.updateComment)
+router.put('/update', CommentControllers.updateComment)
 
 router.delete('/delete/:commentId', CommentControllers.deleteComment)
 

@@ -6,6 +6,7 @@ import Post from "./post.model";
 import mongoose from "mongoose";
 
 const createPostIntoDB = async (payload: IPost) => {
+  console.log("createPostIntoDB payload", payload)
   const user = await User.findById(payload.author);
 
   if (!user) {

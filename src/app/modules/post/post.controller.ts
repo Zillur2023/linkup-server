@@ -5,9 +5,14 @@ import { PostServices } from "./post.service"
 
 
 const createPost = catchAsync(async (req, res) => {
+  // console.log("createPost req", req)
+  console.log("createPost reqBody", req.body)
+  console.log("createPost reqFile", req.files)
+  // console.log("createPost image", req.image)
+  const image = (req.files as Express.Multer.File[])?.map(file => file.path) || [];
     const result = await PostServices.createPostIntoDB({
       ...JSON.parse(req.body.data),
-      image: req.file?.path
+      image
     })
   
     sendResponse(res, {

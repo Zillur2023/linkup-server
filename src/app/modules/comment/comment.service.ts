@@ -51,6 +51,8 @@ const updateCommentIntoDB = async (payload: IComment) => {
       if (!result) {
         throw new AppError(httpStatus.NOT_FOUND, "Comment not found");
       }
+    
+    return result
 };
 const deleteCommentIntoDB = async (commentId: string) => {
     const result = await Comment.findByIdAndDelete(commentId);

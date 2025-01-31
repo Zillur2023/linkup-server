@@ -4,7 +4,7 @@ import { multerUpload } from "../../config/multer.config";
 
 const router = Router()
 
-router.post('/create', multerUpload.single("image"), PostControllers.createPost)
+router.post('/create', multerUpload.array("image"), PostControllers.createPost)
 
 router.get('/all-post/:postId?/:userId?', PostControllers.getAllPost);
 
@@ -12,7 +12,7 @@ router.put("/likes", PostControllers.updateLikes);
 
 router.put("/dislikes", PostControllers.updateDislikes);
 
-router.put("/update", multerUpload.single("image"), PostControllers.updatePost);
+router.put("/update", multerUpload.array("image"), PostControllers.updatePost);
 
 router.put("/comment", PostControllers.updateComment);
 
