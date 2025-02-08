@@ -2,7 +2,7 @@
 import { Model } from "mongoose";
 import { USER_ROLE } from "./user.constant";
 
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 
 export interface IUser {
   _id?: string;
@@ -12,19 +12,18 @@ export interface IUser {
   needsPasswordChange: boolean;
   passwordChangedAt?: Date;
   bio?: string;
-  image?: string;
+  images?: string[];
   followers: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
   following: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
   isVerified: boolean;
-  role: 'admin' | 'user'; // Role can be either 'admin' or 'user'
+  role: "admin" | "user"; // Role can be either 'admin' or 'user'
   status: "in-progress" | "blocked";
-  paymentStatus?: 'Pending' | 'Paid' | 'Failed';
+  paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
-
 
 export interface IUserModel extends Model<IUser> {
   //instance methods for checking if passwords are matched
@@ -37,5 +36,3 @@ export interface IUserModel extends Model<IUser> {
     jwtIssuedTimestamp: number
   ): boolean;
 }
-
-

@@ -6,7 +6,7 @@ import Post from "./post.model";
 import mongoose from "mongoose";
 
 const createPostIntoDB = async (payload: IPost) => {
-  console.log("createPostIntoDB payload", payload)
+  // console.log("createPostIntoDB payload", payload);
   const user = await User.findById(payload.author);
 
   if (!user) {
@@ -20,36 +20,40 @@ const createPostIntoDB = async (payload: IPost) => {
 const deleteUnassociatedPosts = async () => {
   try {
     // Step 1: Get all user IDs and all post IDs
-    const allUserIds = await User.find({isDeleted:false}).select('_id').lean(); // Get all user IDs
-    const allPostIds = await Post.find().select('_id author').lean(); // Get all post IDs with their authors
+    const allUserIds = await User.find({ isDeleted: false })
+      .select("_id")
+      .lean(); // Get all user IDs
+    const allPostIds = await Post.find().select("_id author").lean(); // Get all post IDs with their authors
 
     // Extract user IDs from the array of user objects
-    const userIds = allUserIds.map(user => user._id.toString()); // Convert ObjectId to string for comparison
+    const userIds = allUserIds.map((user) => user._id.toString()); // Convert ObjectId to string for comparison
 
     // Step 2: Filter posts that do not have an associated user ID
     const postIdsToDelete = allPostIds
-      .filter(post => !userIds.includes(String(post?.author))) // Keep posts without a valid user
-      .map(post => post._id); // Get the IDs of those posts
+      .filter((post) => !userIds.includes(String(post?.author))) // Keep posts without a valid user
+      .map((post) => post._id); // Get the IDs of those posts
 
     // Step 3: Delete the unassociated posts
     if (postIdsToDelete.length > 0) {
       await Post.deleteMany({ _id: { $in: postIdsToDelete } });
     } else {
-
     }
   } catch (error) {
-    console.error('Error deleting unassociated posts:', error);
+    console.error("Error deleting unassociated posts:", error);
   }
 };
 
-
 const getAllPostFromDB = async (
-  postId?: string, 
-  userId?: string, 
-  searchTerm?: string, 
+  postId?: string,
+  userId?: string,
+  searchTerm?: string,
   category?: string,
-  sortBy?: "highestLikes" | "lowestLikes" | "highestDislikes" | "lowestDislikes",
-  isPremium?: boolean  // New parameter to specify premium filter
+  sortBy?:
+    | "highestLikes"
+    | "lowestLikes"
+    | "highestDislikes"
+    | "lowestDislikes",
+  isPremium?: boolean // New parameter to specify premium filter
 ) => {
   await deleteUnassociatedPosts(); // Delete posts without associated users
 
@@ -64,9 +68,8 @@ const getAllPostFromDB = async (
     pipeline.push({ $match: { isPremium: { $ne: true } } });
   }
 
-
   if (postId) {
-  // If postId is provided, fetch the specific post
+    // If postId is provided, fetch the specific post
     pipeline.push({ $match: { _id: new mongoose.Types.ObjectId(postId) } });
   } else if (userId) {
     // If userId is provided, fetch posts by that user
@@ -79,9 +82,9 @@ const getAllPostFromDB = async (
           $or: [
             { title: { $regex: searchTerm, $options: "i" } },
             { category: { $regex: searchTerm, $options: "i" } },
-            { content: { $regex: searchTerm, $options: "i" } }
-          ]
-        }
+            { content: { $regex: searchTerm, $options: "i" } },
+          ],
+        },
       });
     }
     // If category is provided, filter by category
@@ -135,7 +138,7 @@ const getAllPostFromDB = async (
   );
 
   // Execute the aggregation pipeline to get all posts
-   result = await Post.aggregate(pipeline).exec();
+  result = await Post.aggregate(pipeline).exec();
 
   // Sorting based on likes and dislikes after fetching
   if (sortBy) {
@@ -155,7 +158,7 @@ const getAllPostFromDB = async (
         case "lowestDislikes":
           return dislikeCountA - dislikeCountB; // Sort ascending
         default:
-         return 0; 
+          return 0;
       }
     });
   } else {
@@ -169,7 +172,6 @@ const getAllPostFromDB = async (
 
   return result;
 };
-
 
 export const updateLikesIntoDB = async (userId: string, postId: string) => {
   const userObjectId = new mongoose.Types.ObjectId(userId);
@@ -199,14 +201,16 @@ export const updateLikesIntoDB = async (userId: string, postId: string) => {
   const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
 
   // Check if the user has already disliked (they should not be allowed to like if so)
-  const hasDisliked = post.dislikes.some((dislikeId) => dislikeId.equals(userObjectId));
+  const hasDisliked = post.dislikes.some((dislikeId) =>
+    dislikeId.equals(userObjectId)
+  );
 
   if (hasDisliked) {
-   await Post.findByIdAndUpdate(
-    postObjectId,
-    {$pull: {dislikes: userObjectId}},
-    {new: true}
-   )
+    await Post.findByIdAndUpdate(
+      postObjectId,
+      { $pull: { dislikes: userObjectId } },
+      { new: true }
+    );
   } else {
     if (hasLiked) {
       // If already liked, remove the like
@@ -254,7 +258,9 @@ export const updateDislikesIntoDB = async (userId: string, postId: string) => {
   }
 
   // Check if the user has already disliked
-  const hasDisliked = post.dislikes.some((dislikeId) => dislikeId.equals(userObjectId));
+  const hasDisliked = post.dislikes.some((dislikeId) =>
+    dislikeId.equals(userObjectId)
+  );
 
   // Check if the user has already liked (they should not be allowed to dislike if so)
   const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
@@ -263,9 +269,9 @@ export const updateDislikesIntoDB = async (userId: string, postId: string) => {
     // throw new AppError(httpStatus.FORBIDDEN, "You cannot dislike after likeing. Remove like first.");
     await Post.findByIdAndUpdate(
       postObjectId,
-      {$pull: {likes: userObjectId}},
-      {new: true}
-     )
+      { $pull: { likes: userObjectId } },
+      { new: true }
+    );
   } else {
     if (hasDisliked) {
       // If already disliked, remove the dislike
@@ -293,6 +299,8 @@ const updatePostIntoDB = async (payload: IPost) => {
     runValidators: true,
   });
 
+  // console.log("service Post", result);
+
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, "Post not found");
   }
@@ -317,7 +325,6 @@ export const updateCommentIntoDB = async (userId: string, postId: string) => {
     throw new AppError(httpStatus.NOT_FOUND, "Post not found");
   }
 
-
   if (user && post) {
     // Add the like
     await Post.findByIdAndUpdate(
@@ -340,27 +347,24 @@ const deletePostFromDB = async (postId: string) => {
   return result;
 };
 
-
-
 const isAvailableForVerifiedIntoDB = async (id: string) => {
-    const user = await User.findById(id);
+  const user = await User.findById(id);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, "User not found");
   }
-// Fetch posts by author ID that have likes
-const postsWithUserLiked = await Post.find(
-  { author: id, likes: { $exists: true, $ne: [] } } // Ensuring posts have likes
-).select("likes");
+  // Fetch posts by author ID that have likes
+  const postsWithUserLiked = await Post.find(
+    { author: id, likes: { $exists: true, $ne: [] } } // Ensuring posts have likes
+  ).select("likes");
 
-// Flatten and filter the likes to check if the user has liked any post
-const userLikes = postsWithUserLiked
-  .flatMap(post => post.likes) // Flatten likes from all posts
-  .filter(like => !like?.equals(user._id)); // Filter for the user's likes
+  // Flatten and filter the likes to check if the user has liked any post
+  const userLikes = postsWithUserLiked
+    .flatMap((post) => post.likes) // Flatten likes from all posts
+    .filter((like) => !like?.equals(user._id)); // Filter for the user's likes
 
-
-return userLikes
-}
+  return userLikes;
+};
 
 export const PostServices = {
   createPostIntoDB,
@@ -370,6 +374,5 @@ export const PostServices = {
   updatePostIntoDB,
   updateCommentIntoDB,
   deletePostFromDB,
-  isAvailableForVerifiedIntoDB
+  isAvailableForVerifiedIntoDB,
 };
-

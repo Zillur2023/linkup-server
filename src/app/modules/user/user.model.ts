@@ -18,7 +18,7 @@ export const userSchema = new Schema<IUser, IUserModel>(
       type: Date,
     },
     bio: { type: String },
-    image: { type: String },
+    images: [{ type: String }],
     followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     isVerified: { type: Boolean, default: false },
@@ -65,7 +65,6 @@ userSchema.post("save", function (doc, next) {
   doc.password = "";
   next();
 });
-
 
 userSchema.statics.isPasswordMatched = async function (
   plainTextPassword,
