@@ -22,9 +22,6 @@ const loginUser = catchAsync(async (req, res) => {
     // maxAge: 1000 * 60 * 60 * 24 * 365,
   });
 
-  // console.log("logiN res", res)
-  // console.log("logiN req", req)
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -51,8 +48,6 @@ const changePassword = catchAsync(async (req, res) => {
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
-  // console.log('refreshToken from req.cookies',refreshToken)
-
   const result = await AuthServices.refreshToken(refreshToken);
   const { accessToken } = result; // Assuming refreshToken method returns an object with the access token
 
@@ -63,7 +58,6 @@ const refreshToken = catchAsync(async (req, res) => {
   //     sameSite: true,
   //     maxAge: 1000 * 60 * 60 * 24 * 365,
   // });
-  console.log("refreshTOken result", result);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

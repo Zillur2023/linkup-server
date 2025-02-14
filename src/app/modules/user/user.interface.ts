@@ -12,7 +12,8 @@ export interface IUser {
   needsPasswordChange: boolean;
   passwordChangedAt?: Date;
   bio?: string;
-  images?: string[];
+  profileImage?: string;
+  coverImage?: string;
   followers: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
   following: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
   isVerified: boolean;

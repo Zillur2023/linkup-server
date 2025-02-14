@@ -1,14 +1,14 @@
-import { Router } from "express";
 import { UserControllers } from "./user.controller";
 import { multerUpload } from "../../config/multer.config";
 import auth from "../../middlewares/auth";
 import { USER_ROLE } from "./user.constant";
+import { Router } from "express";
 
 const router = Router();
 
 router.post(
   "/create",
-  multerUpload.array("images"),
+  multerUpload.single("profileImage"),
   UserControllers.createUser
 );
 
@@ -20,9 +20,12 @@ router.get("/all-user", auth(USER_ROLE.admin), UserControllers.getAllUser);
 router.get("/:id", UserControllers.getUserById);
 
 router.put(
-  "/update-profile",
-  multerUpload.single("image"),
-  UserControllers.updateUserProfile
+  "/update",
+  multerUpload.fields([
+    { name: "profileImage", maxCount: 1 }, // Allows only 1 profile image
+    { name: "coverImage", maxCount: 1 }, // Allows only 1 cover image
+  ]),
+  UserControllers.updateUser
 );
 
 router.put("/followers/:id", UserControllers.updateFollowers);

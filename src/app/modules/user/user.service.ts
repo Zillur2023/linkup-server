@@ -46,19 +46,18 @@ const getAllUserFromDB = async () => {
 
   return result;
 };
-const getUserFromDB = async (email: string) => {
+const getUserByEmailFromDB = async (email: string) => {
   const result = await User.findOne({ email });
-  // console.log("getUserFromDB", result);
   return result;
 };
 const getUserByIdFromDB = async (id: string) => {
   const result = await User.findById(id);
-  // console.log("getUserByIdFromDB", result);
 
   return result;
 };
 
-const updateUserProfileIntoDB = async (payload: IUser) => {
+const updateUserIntoDB = async (payload: IUser) => {
+  console.log("updateUserIntoDB payload", payload);
   const user = await User.findByIdAndUpdate(payload._id, payload, {
     new: true,
     runValidators: true,
@@ -162,9 +161,9 @@ const deleteUserFromDB = async (id: string) => {
 export const UserServices = {
   createUserIntoDB,
   getAllUserFromDB,
-  getUserFromDB,
+  getUserByEmailFromDB,
   getUserByIdFromDB,
-  updateUserProfileIntoDB,
+  updateUserIntoDB,
   updateUserFollowersIntoDB,
   updateFollowAndUnfollowIntoDB,
   deleteUserFromDB,
