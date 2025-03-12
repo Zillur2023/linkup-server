@@ -10,7 +10,8 @@ router.post(
   PostControllers.createPost
 );
 
-router.get("/all-post/:postId?/:userId?", PostControllers.getAllPost);
+// router.get("/all-post/:postId?/:userId?", PostControllers.getAllPost);
+router.get("/all-post", PostControllers.getAllPost);
 
 router.put("/likes", PostControllers.updateLikes);
 

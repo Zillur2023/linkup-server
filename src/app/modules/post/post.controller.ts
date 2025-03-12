@@ -19,14 +19,15 @@ const createPost = catchAsync(async (req, res) => {
   });
 });
 const getAllPost = catchAsync(async (req, res) => {
-  const { postId, userId } = req.params as {
+  // const { postId, userId } = req.params as {
+  //   postId?: string;
+  //   userId?: string;
+  // };
+
+  const { postId, userId, searchQuery, sortBy, isPremium } = req.query as {
     postId?: string;
     userId?: string;
-  };
-
-  const { searchTerm, category, sortBy, isPremium } = req.query as {
-    searchTerm?: string;
-    category?: string;
+    searchQuery?: string;
     sortBy?:
       | "highestLikes"
       | "lowestLikes"
@@ -34,15 +35,13 @@ const getAllPost = catchAsync(async (req, res) => {
       | "lowestDislikes";
     isPremium?: boolean;
   };
+  console.log("getAllPost searchQeury", searchQuery);
 
   // Fetch posts from the database using the params and query parameters
   const result = await PostServices.getAllPostFromDB(
     postId,
     userId,
-    searchTerm,
-    category,
-    sortBy,
-    isPremium
+    searchQuery
   );
 
   // Send response back to the client

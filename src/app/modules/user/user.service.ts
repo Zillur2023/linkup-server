@@ -23,34 +23,53 @@ const createUserIntoDB = async (
   return result;
 };
 
-const getAllUserFromDB = async () => {
+const getAllUserFromDB = async (searchQuery?: string, userId?: string) => {
+  const matchStage: any = { isDeleted: { $ne: true } };
+
+  // Apply search term filter if provided
+  if (searchQuery) {
+    matchStage.name = { $regex: searchQuery, $options: "i" };
+  }
+
+  // Exclude the requesting user from the results if `userId` is provided
+  if (userId) {
+    matchStage._id = { $ne: userId };
+  }
+
   const result = await User.aggregate([
-    { $match: { isDeleted: { $ne: true } } },
+    { $match: matchStage },
     {
       $lookup: {
         from: "users",
         localField: "followers",
         foreignField: "_id",
-        as: "followes",
+        as: "followers",
       },
     },
     {
       $lookup: {
-        from: "users", // Collection name for likes
+        from: "users",
         localField: "following",
         foreignField: "_id",
         as: "following",
+      },
+    },
+    {
+      $project: {
+        password: 0, // Exclude sensitive fields if necessary
       },
     },
   ]).exec();
 
   return result;
 };
+
 const getUserByEmailFromDB = async (email: string) => {
   const result = await User.findOne({ email });
   return result;
 };
 const getUserByIdFromDB = async (id: string) => {
+  console.log("getUserByIdFromDB id", id);
   const result = await User.findById(id);
 
   return result;

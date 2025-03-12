@@ -12,10 +12,7 @@ router.post(
   UserControllers.createUser
 );
 
-router.get("/all-user", auth(USER_ROLE.admin), UserControllers.getAllUser);
-// router.get('/all-user', UserControllers.getAllUser)
-
-// router.get("/:email", UserControllers.getUser);
+router.get("/all-user/:userId?", UserControllers.getAllUser);
 
 router.get("/:id", UserControllers.getUserById);
 

@@ -18,7 +18,12 @@ const createUser = catchAsync(async (req, res) => {
 });
 
 const getAllUser = catchAsync(async (req, res) => {
-  const result = await UserServices.getAllUserFromDB();
+  const { userId } = req.params as {
+    userId?: string;
+  };
+
+  const { searchQuery } = req.query as { searchQuery?: string };
+  const result = await UserServices.getAllUserFromDB(searchQuery);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

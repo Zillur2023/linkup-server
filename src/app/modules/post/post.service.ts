@@ -6,7 +6,6 @@ import Post from "./post.model";
 import mongoose from "mongoose";
 
 const createPostIntoDB = async (payload: IPost) => {
-  // console.log("createPostIntoDB payload", payload);
   const user = await User.findById(payload.author);
 
   if (!user) {
@@ -46,8 +45,7 @@ const deleteUnassociatedPosts = async () => {
 const getAllPostFromDB = async (
   postId?: string,
   userId?: string,
-  searchTerm?: string,
-  category?: string,
+  searchQuery?: string ,
   sortBy?:
     | "highestLikes"
     | "lowestLikes"
@@ -55,6 +53,8 @@ const getAllPostFromDB = async (
     | "lowestDislikes",
   isPremium?: boolean // New parameter to specify premium filter
 ) => {
+  console.log("getAllPostFromDB userId", userId);
+  console.log("getAllPostFromDB searchQuery", searchQuery);
   await deleteUnassociatedPosts(); // Delete posts without associated users
 
   let result;
@@ -76,21 +76,15 @@ const getAllPostFromDB = async (
     pipeline.push({ $match: { author: new mongoose.Types.ObjectId(userId) } });
   } else {
     // If searchTerm is provided, search by title (case-insensitive)
-    if (searchTerm) {
+    if (searchQuery) {
       pipeline.push({
         $match: {
           $or: [
-            { title: { $regex: searchTerm, $options: "i" } },
-            { category: { $regex: searchTerm, $options: "i" } },
-            { content: { $regex: searchTerm, $options: "i" } },
+            // { "author.name": { $regex: searchQuery, $options: "i" } },
+            { title: { $regex: searchQuery, $options: "i" } },
+            { content: { $regex: searchQuery, $options: "i" } },
           ],
         },
-      });
-    }
-    // If category is provided, filter by category
-    if (category) {
-      pipeline.push({
-        $match: { category: category },
       });
     }
   }
@@ -298,8 +292,6 @@ const updatePostIntoDB = async (payload: IPost) => {
     new: true,
     runValidators: true,
   });
-
-  // console.log("service Post", result);
 
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, "Post not found");
