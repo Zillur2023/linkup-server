@@ -4,8 +4,30 @@ import { USER_ROLE } from "./user.constant";
 
 import { Types } from "mongoose";
 
+// export interface IUser {
+//   _id?: string;
+//   name: string;
+//   email: string;
+//   password: string;
+//   needsPasswordChange: boolean;
+//   passwordChangedAt?: Date;
+//   bio?: string;
+//   profileImage?: string;
+//   coverImage?: string;
+//   followers: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
+//   following: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
+//   isVerified: boolean;
+//   role: "admin" | "user"; // Role can be either 'admin' or 'user'
+//   status: "in-progress" | "blocked";
+//   paymentStatus?: "Pending" | "Paid" | "Failed";
+//   transactionId?: string;
+//   isDeleted: boolean;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
+
 export interface IUser {
-  _id?: string;
+  _id?: Types.ObjectId;
   name: string;
   email: string;
   password: string;
@@ -16,8 +38,18 @@ export interface IUser {
   coverImage?: string;
   followers: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
   following: Types.ObjectId[]; // Array of ObjectIds referencing 'User'
+  friendRequestsSent: Types.ObjectId[];
+  friendRequestsReceived: Types.ObjectId[];
+  friends: Types.ObjectId[];
   isVerified: boolean;
-  role: "admin" | "user"; // Role can be either 'admin' or 'user'
+  role: "admin" | "user";
+  gender?: "Male" | "Female" | "Other";
+  dateOfBirth?: string;
+  location?: string;
+  website?: string;
+  phone?: string;
+  joinedAt?: string;
+  lastActiveAt?: string;
   status: "in-progress" | "blocked";
   paymentStatus?: "Pending" | "Paid" | "Failed";
   transactionId?: string;

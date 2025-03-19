@@ -4,24 +4,68 @@ import config from "../../config";
 import bcrypt from "bcrypt";
 import { IUser, IUserModel } from "./user.interface";
 
-export const userSchema = new Schema<IUser, IUserModel>(
-  // const UserSchema: Schema = new Schema(
+// export const userSchema = new Schema<IUser, IUserModel>(
+//   // const UserSchema: Schema = new Schema(
+//   {
+//     name: { type: String, required: true },
+//     email: { type: String, required: true, unique: true },
+//     password: { type: String, required: true },
+//     needsPasswordChange: {
+//       type: Boolean,
+//       default: true,
+//     },
+//     passwordChangedAt: {
+//       type: Date,
+//     },
+//     bio: { type: String },
+//     profileImage: { type: String },
+//     coverImage: { type: String },
+//     followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+//     following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+//     isVerified: { type: Boolean, default: false },
+//     role: {
+//       type: String,
+//       enum: ["admin", "user"],
+//       required: true,
+//       default: "user",
+//     },
+//     status: {
+//       type: String,
+//       enum: ["in-progress", "blocked"],
+//       // default: "in-progress",
+//     },
+//     paymentStatus: {
+//       type: String,
+//       enum: ["Pending", "Paid", "Failed"],
+//       // default: "Pending"
+//     },
+//     transactionId: {
+//       type: String,
+//       //  default: ""
+//     },
+//     isDeleted: {
+//       type: Boolean,
+//       default: false,
+//     },
+//   },
+//   { timestamps: true }
+// );
+
+export const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    needsPasswordChange: {
-      type: Boolean,
-      default: true,
-    },
-    passwordChangedAt: {
-      type: Date,
-    },
+    needsPasswordChange: { type: Boolean, default: true },
+    passwordChangedAt: { type: Date },
     bio: { type: String },
     profileImage: { type: String },
     coverImage: { type: String },
     followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+    friendRequestsSent: [{ type: String, default: [] }],
+    friendRequestsReceived: [{ type: String, default: [] }],
+    friends: [{ type: String, default: [] }],
     isVerified: { type: Boolean, default: false },
     role: {
       type: String,
@@ -29,26 +73,20 @@ export const userSchema = new Schema<IUser, IUserModel>(
       required: true,
       default: "user",
     },
-    status: {
-      type: String,
-      enum: ["in-progress", "blocked"],
-      // default: "in-progress",
-    },
-    paymentStatus: {
-      type: String,
-      enum: ["Pending", "Paid", "Failed"],
-      // default: "Pending"
-    },
-    transactionId: {
-      type: String,
-      //  default: ""
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
+    gender: { type: String, enum: ["Male", "Female", "Other"] },
+    dateOfBirth: { type: String },
+    location: { type: String },
+    website: { type: String },
+    phone: { type: String },
+    // joinedAt: { type: String, required: true },
+    joinedAt: { type: String },
+    lastActiveAt: { type: String },
+    status: { type: String, enum: ["in-progress", "blocked"] },
+    paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed"] },
+    transactionId: { type: String },
+    isDeleted: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically adds `createdAt` and `updatedAt`
 );
 
 userSchema.pre("save", async function (next) {
