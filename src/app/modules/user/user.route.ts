@@ -36,6 +36,10 @@ router.put("/sendFriendRequest", UserControllers.sendFriendRequest);
 
 router.put("/acceptFriendRequest", UserControllers.acceptFriendRequest);
 
+router.put("/rejectFriendRequest", UserControllers.rejectFriendRequest);
+
+router.put("/removeFriend", UserControllers.removeFriend);
+
 router.put("/delete/:id", UserControllers.deleteUser);
 
 export const UserRouters = router;

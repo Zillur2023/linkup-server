@@ -170,71 +170,140 @@ const updateFollowAndUnfollowIntoDB = async (
 };
 
 export const sendFriendRequestIntoDB = async (
-  senderId: Types.ObjectId,
-  receiverId: Types.ObjectId
+  senderId: Types.ObjectId | string,
+  receiverId: Types.ObjectId | string
 ): Promise<void> => {
-  // if (senderId.equals(receiverId)) {
-  //   // if (senderId === receiverId) {
-  //   throw new AppError(
-  //     httpStatus.BAD_REQUEST,
-  //     "You cannot send a request to yourself."
-  //   );
-  // }
+  try {
+    const senderObjectId = new mongoose.Types.ObjectId(senderId);
+    const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
 
-  const sender = await User.findById(senderId);
-  const receiver = await User.findById(receiverId);
+    if (senderObjectId.equals(receiverObjectId)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "You cannot send a request to yourself."
+      );
+    }
 
-  if (!sender) throw new AppError(httpStatus.NOT_FOUND, "Sender not found");
-  if (!receiver) throw new AppError(httpStatus.NOT_FOUND, "Receiver not found");
+    const sender = await User.findById(senderObjectId);
+    const receiver = await User.findById(receiverObjectId);
 
-  // if (sender.friends.some((id) => id.equals(receiverId))) {
-  //   throw new AppError(httpStatus.BAD_REQUEST, "You are already friends");
-  // }
+    if (!sender) throw new AppError(httpStatus.NOT_FOUND, "Sender not found");
+    if (!receiver)
+      throw new AppError(httpStatus.NOT_FOUND, "Receiver not found");
 
-  // if (sender.friendRequestsSent.some((id) => id.equals(receiverId))) {
-  //   throw new AppError(httpStatus.BAD_REQUEST, "Friend request already sent");
-  // }
+    if (sender.friends.some((id) => id.equals(receiverObjectId))) {
+      throw new AppError(httpStatus.BAD_REQUEST, "You are already friends");
+    }
 
-  sender.friendRequestsSent.push(receiverId);
-  receiver.friendRequestsReceived.push(senderId);
+    if (sender.friendRequestsSent.some((id) => id.equals(receiverObjectId))) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Friend request already sent");
+    }
 
-  await Promise.all([sender.save(), receiver.save()]);
+    sender.friendRequestsSent.push(receiverObjectId);
+    receiver.friendRequestsReceived.push(senderObjectId);
+
+    await Promise.all([sender.save(), receiver.save()]);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Something went wrong"
+    );
+  }
 };
 
 export const acceptFriendRequestIntoDB = async (
-  userId: Types.ObjectId,
-  requesterId: Types.ObjectId
-) => {
-  // try {
-  const user = await User.findById(userId);
-  const requester = await User.findById(requesterId);
+  userId: Types.ObjectId | string,
+  requesterId: Types.ObjectId | string
+): Promise<void> => {
+  try {
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const requesterObjectId = new mongoose.Types.ObjectId(requesterId);
 
-  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  if (!requester)
-    throw new AppError(httpStatus.NOT_FOUND, "Requester not found");
+    const user = await User.findById(userObjectId);
+    const requester = await User.findById(requesterObjectId);
 
-  // Check if request exists
-  // if (!user.friendRequestsReceived.some((id) => id.equals(requesterId))) {
-  //   throw new AppError(httpStatus.BAD_REQUEST, "No friend request found");
-  // }
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    if (!requester)
+      throw new AppError(httpStatus.NOT_FOUND, "Requester not found");
 
-  // Add to friends list
-  user.friends.push(requesterId);
-  requester.friends.push(userId);
+    if (
+      !user.friendRequestsReceived.some((id) => id.equals(requesterObjectId))
+    ) {
+      throw new AppError(httpStatus.BAD_REQUEST, "No friend request found");
+    }
 
-  // Remove from requests
-  user.friendRequestsReceived = user.friendRequestsReceived.filter(
-    (id) => !id.equals(requesterId)
-  );
-  requester.friendRequestsSent = requester.friendRequestsSent.filter(
-    (id) => !id.equals(userId)
-  );
+    user.friends.push(requesterObjectId);
+    requester.friends.push(userObjectId);
 
-  await user.save();
-  await requester.save();
-  // } catch (error) {
-  //   throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Server error");
-  // }
+    user.friendRequestsReceived = user.friendRequestsReceived.filter(
+      (id) => !id.equals(requesterObjectId)
+    );
+    requester.friendRequestsSent = requester.friendRequestsSent.filter(
+      (id) => !id.equals(userObjectId)
+    );
+
+    await Promise.all([user.save(), requester.save()]);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Something went wrong"
+    );
+  }
+};
+
+export const rejectFriendRequestIntoDB = async (
+  userId: Types.ObjectId | string,
+  requesterId: Types.ObjectId | string
+): Promise<void> => {
+  try {
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const requesterObjectId = new mongoose.Types.ObjectId(requesterId);
+
+    const user = await User.findById(userObjectId);
+    const requester = await User.findById(requesterObjectId);
+
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    if (!requester)
+      throw new AppError(httpStatus.NOT_FOUND, "Requester not found");
+
+    user.friendRequestsReceived = user.friendRequestsReceived.filter(
+      (id) => !id.equals(requesterObjectId)
+    );
+    requester.friendRequestsSent = requester.friendRequestsSent.filter(
+      (id) => !id.equals(userObjectId)
+    );
+
+    await Promise.all([user.save(), requester.save()]);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Something went wrong"
+    );
+  }
+};
+
+export const removeFriendFromDB = async (
+  userId: Types.ObjectId | string,
+  friendId: Types.ObjectId | string
+): Promise<void> => {
+  try {
+    const user = await User.findById(userId);
+    const friend = await User.findById(friendId);
+
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+    if (!friend) throw new AppError(httpStatus.NOT_FOUND, "Friend not found");
+
+    // Remove each other from friends list
+    user.friends = user.friends.filter((id) => !id.equals(friendId));
+    friend.friends = friend.friends.filter((id) => !id.equals(userId));
+
+    await Promise.all([user.save(), friend.save()]);
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Something went wrong"
+    );
+  }
 };
 
 const deleteUserFromDB = async (id: string) => {
@@ -255,5 +324,7 @@ export const UserServices = {
   updateFollowAndUnfollowIntoDB,
   sendFriendRequestIntoDB,
   acceptFriendRequestIntoDB,
+  rejectFriendRequestIntoDB,
+  removeFriendFromDB,
   deleteUserFromDB,
 };

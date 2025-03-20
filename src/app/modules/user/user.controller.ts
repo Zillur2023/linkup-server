@@ -131,6 +131,33 @@ const acceptFriendRequest = catchAsync(async (req, res) => {
   });
 });
 
+const rejectFriendRequest = catchAsync(async (req, res) => {
+  const { userId, requesterId } = req.body;
+  const result = await UserServices.rejectFriendRequestIntoDB(
+    userId,
+    requesterId
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Reject friend request successfully",
+    data: result,
+  });
+});
+
+const removeFriend = catchAsync(async (req, res) => {
+  const { userId, friendId } = req.body;
+  const result = await UserServices.removeFriendFromDB(userId, friendId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Remove friend successfully",
+    data: result,
+  });
+});
+
 const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await UserServices.deleteUserFromDB(id);
@@ -153,5 +180,7 @@ export const UserControllers = {
   updateFollowAndUnfollow,
   sendFriendRequest,
   acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
   deleteUser,
 };

@@ -63,9 +63,13 @@ export const userSchema = new Schema<IUser>(
     coverImage: { type: String },
     followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-    friendRequestsSent: [{ type: String, default: [] }],
-    friendRequestsReceived: [{ type: String, default: [] }],
-    friends: [{ type: String, default: [] }],
+    friendRequestsSent: [
+      { type: Schema.Types.ObjectId, ref: "User", default: [] },
+    ],
+    friendRequestsReceived: [
+      { type: Schema.Types.ObjectId, ref: "User", default: [] },
+    ],
+    friends: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     isVerified: { type: Boolean, default: false },
     role: {
       type: String,
