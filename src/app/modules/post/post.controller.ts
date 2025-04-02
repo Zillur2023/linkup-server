@@ -35,7 +35,6 @@ const getAllPost = catchAsync(async (req, res) => {
       | "lowestDislikes";
     isPremium?: boolean;
   };
-  console.log("getAllPost searchQeury", searchQuery);
 
   // Fetch posts from the database using the params and query parameters
   const result = await PostServices.getAllPostFromDB(
@@ -82,12 +81,9 @@ const updatePost = catchAsync(async (req, res) => {
   // Parse `req.body.data` because it's a JSON string
   const parsedData = JSON.parse(req.body.data);
 
-  console.log("parsedData post", parsedData);
-
   // Extract images from req.files
   const uploadedImages =
     (req.files as Express.Multer.File[])?.map((file) => file.path) || [];
-  console.log("parseData uploadImages", uploadedImages);
 
   // Merge existing images with newly uploaded images
   // const allImages = [...(parsedData.images || []), ...uploadedImages];
@@ -105,7 +101,6 @@ const updatePost = catchAsync(async (req, res) => {
     ...parsedData,
     images: allImages, // Correct way to merge images
   });
-  console.log("RESult", result);
   // const result = await PostServices.updatePostIntoDB(req.body);
 
   sendResponse(res, {

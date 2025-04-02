@@ -69,7 +69,6 @@ const updateUser = catchAsync(async (req, res) => {
   if (files.coverImage && Array.isArray(files.coverImage)) {
     parsedData.coverImage = files.coverImage[0].path;
   }
-  // console.log({ parsedData });
   const result = await UserServices.updateUserIntoDB(parsedData);
   res.status(200).json({
     success: true,

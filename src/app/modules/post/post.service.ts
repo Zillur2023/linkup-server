@@ -45,7 +45,7 @@ const deleteUnassociatedPosts = async () => {
 const getAllPostFromDB = async (
   postId?: string,
   userId?: string,
-  searchQuery?: string ,
+  searchQuery?: string,
   sortBy?:
     | "highestLikes"
     | "lowestLikes"
@@ -53,8 +53,6 @@ const getAllPostFromDB = async (
     | "lowestDislikes",
   isPremium?: boolean // New parameter to specify premium filter
 ) => {
-  console.log("getAllPostFromDB userId", userId);
-  console.log("getAllPostFromDB searchQuery", searchQuery);
   await deleteUnassociatedPosts(); // Delete posts without associated users
 
   let result;
