@@ -6,8 +6,6 @@ import router from "./app/routes";
 import notFound from "./app/middlewares/notFound";
 import globalErrorHandler from "./app/middlewares/globalErrorhandler";
 
-
-
 const app: Application = express();
 
 app.use(express.json());

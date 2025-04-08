@@ -153,14 +153,15 @@ const getAllPostFromDB = async (
           return 0;
       }
     });
-  } else {
-    // Default sort by highest likes if no sort option is provided
-    result.sort((a, b) => {
-      const likeCountA = a.likes ? a.likes.length : 0;
-      const likeCountB = b.likes ? b.likes.length : 0;
-      return likeCountB - likeCountA; // Sort by likes descending
-    });
   }
+  //  else {
+  //   // Default sort by highest likes if no sort option is provided
+  //   result.sort((a, b) => {
+  //     const likeCountA = a.likes ? a.likes.length : 0;
+  //     const likeCountB = b.likes ? b.likes.length : 0;
+  //     return likeCountB - likeCountA; // Sort by likes descending
+  //   });
+  // }
 
   return result;
 };

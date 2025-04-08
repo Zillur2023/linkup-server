@@ -3,6 +3,7 @@ import { Chat } from "./chat.model";
 import { User } from "../user/user.model";
 import httpStatus from "http-status";
 import AppError from "../../errors/AppError";
+import { getReceiverSocketId, io } from "../../socketOi";
 
 export const createChatIntoDB = async (
   senderId: Types.ObjectId | string,
@@ -30,17 +31,21 @@ export const createChatIntoDB = async (
     }
 
     // Create and save the chat message
-    const chat = await Chat.create({ senderId, receiverId, content });
+    const newMessage = await Chat.create({ senderId, receiverId, content });
 
     // Add chat reference to sender & receiver
     await Promise.all([
       User.findByIdAndUpdate(senderId.toString(), {
-        $push: { chats: chat._id },
+        $push: { chats: newMessage._id },
       }),
       User.findByIdAndUpdate(receiverId.toString(), {
-        $push: { chats: chat._id },
+        $push: { chats: newMessage._id },
       }),
     ]);
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
   } catch (error) {
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,

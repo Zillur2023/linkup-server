@@ -68,8 +68,9 @@ const getUserByEmailFromDB = async (email: string) => {
   const result = await User.findOne({ email });
   return result;
 };
-const getUserByIdFromDB = async (id: ObjectId) => {
-  const result = await User.findById(id)
+const getUserByIdFromDB = async (id: string) => {
+  const userId = new mongoose.Types.ObjectId(id);
+  const result = await User.findById(userId)
     // .populate("chats")
     .populate({
       path: "chats",
