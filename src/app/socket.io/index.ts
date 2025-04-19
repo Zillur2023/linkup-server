@@ -2,6 +2,11 @@ import { Server } from "socket.io";
 import http from "http";
 import config from "../config";
 import app from "../../app";
+import { chatHandler, handleTypingEvents } from "./chatHandler";
+import { likeDislikeHandler } from "./likeDislikeHandler";
+import Post from "../modules/post/post.model";
+import Comment from "../modules/comment/comment.model";
+import { commentHandler } from "./commentHandler";
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -12,11 +17,11 @@ const io = new Server(server, {
   },
 });
 
-export const getReceiverSocketId = (receiverId: any) => {
-  return users[receiverId];
+export const getSocketId = (userId: string) => {
+  return users[userId];
 };
 
-const users: any = {};
+const users: Record<string, string> = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
@@ -26,6 +31,11 @@ io.on("connection", (socket) => {
     console.log("Hello ", users);
   }
   io.emit("getOnlineUsers", Object.keys(users));
+
+  // Handle typing events in the separate module
+  chatHandler(io, socket);
+  likeDislikeHandler(io, socket);
+  commentHandler(io, socket);
 
   socket.on("disconnect", () => {
     console.log("a user disconnected", socket.id);

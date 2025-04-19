@@ -5,4 +5,6 @@ const router = Router();
 
 router.post("/createChat", ChatControllers.createChat);
 
+router.get("/getChatbyUserId", ChatControllers.getChatByUserId);
+
 export const ChatRouters = router;

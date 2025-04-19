@@ -4,6 +4,7 @@ import { User } from "../user/user.model";
 import { IPost } from "./post.interface";
 import Post from "./post.model";
 import mongoose from "mongoose";
+import { getSocketId, io } from "../../socket.io";
 
 const createPostIntoDB = async (payload: IPost) => {
   const user = await User.findById(payload.author);
@@ -166,124 +167,29 @@ const getAllPostFromDB = async (
   return result;
 };
 
-export const updateLikesIntoDB = async (userId: string, postId: string) => {
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-  const postObjectId = new mongoose.Types.ObjectId(postId);
+export const updateLikesIntoDB = async (
+  postId: string,
+  likes: string[],
+  dislikes: string[]
+) => {
+  console.log({ postId, likes });
+  const updatePostLikes = await Post.findByIdAndUpdate(postId, {
+    $set: { likes: likes, dislikes: dislikes },
+  });
 
-  // Find the user by its ID
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
-  // Find the post by its ID
-  const post = await Post.findById(postObjectId);
-
-  if (!post) {
-    throw new AppError(httpStatus.NOT_FOUND, "Post not found");
-  }
-
-  if (!post.likes) {
-    post.likes = [];
-  }
-  if (!post.dislikes) {
-    post.dislikes = [];
-  }
-
-  // Check if the user has already liked
-  const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
-
-  // Check if the user has already disliked (they should not be allowed to like if so)
-  const hasDisliked = post.dislikes.some((dislikeId) =>
-    dislikeId.equals(userObjectId)
-  );
-
-  if (hasDisliked) {
-    await Post.findByIdAndUpdate(
-      postObjectId,
-      { $pull: { dislikes: userObjectId } },
-      { new: true }
-    );
-  } else {
-    if (hasLiked) {
-      // If already liked, remove the like
-      await Post.findByIdAndUpdate(
-        postObjectId,
-        { $pull: { likes: userObjectId } },
-        { new: true }
-      );
-    } else {
-      // Add the like
-      await Post.findByIdAndUpdate(
-        postObjectId,
-        { $addToSet: { likes: userObjectId } },
-        { new: true }
-      );
-    }
-  }
-
-  return Post.findById(postObjectId); // Return the updated post
+  return updatePostLikes;
 };
 
-export const updateDislikesIntoDB = async (userId: string, postId: string) => {
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-  const postObjectId = new mongoose.Types.ObjectId(postId);
+export const updateDislikesIntoDB = async (
+  postId: string,
+  dislikes: string[]
+) => {
+  console.log({ postId, dislikes });
+  const updatePostDislikes = await Post.findByIdAndUpdate(postId, {
+    $set: { dislikes: dislikes },
+  });
 
-  // Find the user by its ID
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
-
-  // Find the post by its ID
-  const post = await Post.findById(postObjectId);
-
-  if (!post) {
-    throw new AppError(httpStatus.NOT_FOUND, "Post not found");
-  }
-
-  if (!post.likes) {
-    post.likes = [];
-  }
-  if (!post.dislikes) {
-    post.dislikes = [];
-  }
-
-  // Check if the user has already disliked
-  const hasDisliked = post.dislikes.some((dislikeId) =>
-    dislikeId.equals(userObjectId)
-  );
-
-  // Check if the user has already liked (they should not be allowed to dislike if so)
-  const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
-
-  if (hasLiked) {
-    // throw new AppError(httpStatus.FORBIDDEN, "You cannot dislike after likeing. Remove like first.");
-    await Post.findByIdAndUpdate(
-      postObjectId,
-      { $pull: { likes: userObjectId } },
-      { new: true }
-    );
-  } else {
-    if (hasDisliked) {
-      // If already disliked, remove the dislike
-      await Post.findByIdAndUpdate(
-        postObjectId,
-        { $pull: { dislikes: userObjectId } },
-        { new: true }
-      );
-    } else {
-      // Add the dislike
-      await Post.findByIdAndUpdate(
-        postObjectId,
-        { $addToSet: { dislikes: userObjectId } },
-        { new: true }
-      );
-    }
-  }
-
-  return Post.findById(postObjectId); // Return the updated post
+  return updatePostDislikes;
 };
 
 const updatePostIntoDB = async (payload: IPost) => {
@@ -367,3 +273,125 @@ export const PostServices = {
   deletePostFromDB,
   isAvailableForVerifiedIntoDB,
 };
+
+// export const updateLikesIntoDB = async (userId: string, postId: string) => {
+//   const userObjectId = new mongoose.Types.ObjectId(userId);
+//   const postObjectId = new mongoose.Types.ObjectId(postId);
+
+//   // Find the user by its ID
+//   const user = await User.findById(userId);
+
+//   if (!user) {
+//     throw new AppError(httpStatus.NOT_FOUND, "User not found");
+//   }
+//   // Find the post by its ID
+//   const post = await Post.findById(postObjectId);
+
+//   if (!post) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Post not found");
+//   }
+
+//   if (!post.likes) {
+//     post.likes = [];
+//   }
+//   if (!post.dislikes) {
+//     post.dislikes = [];
+//   }
+
+//   // Check if the user has already liked
+//   const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
+
+//   // Check if the user has already disliked (they should not be allowed to like if so)
+//   const hasDisliked = post.dislikes.some((dislikeId) =>
+//     dislikeId.equals(userObjectId)
+//   );
+
+//   if (hasDisliked) {
+//     await Post.findByIdAndUpdate(
+//       postObjectId,
+//       { $pull: { dislikes: userObjectId } },
+//       { new: true }
+//     );
+//   } else {
+//     if (hasLiked) {
+//       // If already liked, remove the like
+//       await Post.findByIdAndUpdate(
+//         postObjectId,
+//         { $pull: { likes: userObjectId } },
+//         { new: true }
+//       );
+//     } else {
+//       // Add the like
+//       await Post.findByIdAndUpdate(
+//         postObjectId,
+//         { $addToSet: { likes: userObjectId } },
+//         { new: true }
+//       );
+//     }
+//   }
+
+//   const updatePost = Post.findById(postObjectId);
+
+//   return updatePost; // Return the updated post
+// };
+
+// export const updateDislikesIntoDB = async (userId: string, postId: string) => {
+//   const userObjectId = new mongoose.Types.ObjectId(userId);
+//   const postObjectId = new mongoose.Types.ObjectId(postId);
+
+//   // Find the user by its ID
+//   const user = await User.findById(userId);
+
+//   if (!user) {
+//     throw new AppError(httpStatus.NOT_FOUND, "User not found");
+//   }
+
+//   // Find the post by its ID
+//   const post = await Post.findById(postObjectId);
+
+//   if (!post) {
+//     throw new AppError(httpStatus.NOT_FOUND, "Post not found");
+//   }
+
+//   if (!post.likes) {
+//     post.likes = [];
+//   }
+//   if (!post.dislikes) {
+//     post.dislikes = [];
+//   }
+
+//   // Check if the user has already disliked
+//   const hasDisliked = post.dislikes.some((dislikeId) =>
+//     dislikeId.equals(userObjectId)
+//   );
+
+//   // Check if the user has already liked (they should not be allowed to dislike if so)
+//   const hasLiked = post.likes.some((likeId) => likeId.equals(userObjectId));
+
+//   if (hasLiked) {
+//     // throw new AppError(httpStatus.FORBIDDEN, "You cannot dislike after likeing. Remove like first.");
+//     await Post.findByIdAndUpdate(
+//       postObjectId,
+//       { $pull: { likes: userObjectId } },
+//       { new: true }
+//     );
+//   } else {
+//     if (hasDisliked) {
+//       // If already disliked, remove the dislike
+//       await Post.findByIdAndUpdate(
+//         postObjectId,
+//         { $pull: { dislikes: userObjectId } },
+//         { new: true }
+//       );
+//     } else {
+//       // Add the dislike
+//       await Post.findByIdAndUpdate(
+//         postObjectId,
+//         { $addToSet: { dislikes: userObjectId } },
+//         { new: true }
+//       );
+//     }
+//   }
+
+//   return Post.findById(postObjectId); // Return the updated post
+// };

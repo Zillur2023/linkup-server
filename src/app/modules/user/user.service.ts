@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import { User } from "./user.model";
 import { IUser } from "./user.interface";
 import mongoose, { ObjectId, Types } from "mongoose";
+import { getSocketId, io } from "../../socket.io";
 
 const createUserIntoDB = async (
   payload: Pick<IUser, "name" | "email" | "password">
@@ -72,13 +73,16 @@ const getUserByIdFromDB = async (id: string) => {
   const userId = new mongoose.Types.ObjectId(id);
   const result = await User.findById(userId)
     // .populate("chats")
-    .populate({
-      path: "chats",
-      populate: [
-        { path: "senderId", select: "name profileImage" },
-        { path: "receiverId", select: "name profileImage" },
-      ],
-    })
+    // .populate({
+    //   path: "chats",
+    //   populate: [
+    //     { path: "_id" },
+    //     // { path: "senderId", select: "name profileImage" },
+    //     // { path: "senderId", select: "name profileImage" },
+    //     // { path: "receiverId", select: "name profileImage" },
+    //   ],
+    // })
+    .populate("friendRequestsSent")
     .populate("friendRequestsReceived")
     .populate("friends");
 
@@ -208,11 +212,14 @@ export const sendFriendRequestIntoDB = async (
 
     // Fetch sender and receiver to check their current state
     const [sender, receiver] = await Promise.all([
-      User.findById(senderObjectId, { friendRequestsSent: 1, friends: 1 }),
-      User.findById(receiverObjectId, {
-        friendRequestsReceived: 1,
-        friends: 1,
-      }),
+      User.findById(senderObjectId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
+      User.findById(receiverObjectId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
     ]);
 
     if (!sender || !receiver) {
@@ -238,6 +245,23 @@ export const sendFriendRequestIntoDB = async (
         $push: { friendRequestsReceived: senderObjectId }, // Add sender to receiver's received requests
       }),
     ]);
+
+    const [updatedSender, updatedReceiver] = await Promise.all([
+      User.findById(senderObjectId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
+      User.findById(receiverObjectId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
+    ]);
+
+    const senderSocketId = getSocketId(senderId as string);
+    const receiverSocketId = getSocketId(receiverId as string);
+
+    io.to(senderSocketId).emit("friendRequestSent", updatedSender);
+    io.to(receiverSocketId).emit("friendRequestReceived", updatedReceiver);
   } catch (error) {
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
@@ -277,6 +301,26 @@ export const acceptFriendRequestIntoDB = async (
         $pull: { friendRequestsSent: userId },
       }),
     ]);
+
+    const [updatedUser, updatedRequester] = await Promise.all([
+      User.findById(userId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
+      User.findById(requesterId)
+        .populate("friendRequestsSent")
+        .populate("friendRequestsReceived")
+        .populate("friends"),
+    ]);
+
+    const userSocketId = getSocketId(userId as string);
+    const requesterSocketId = getSocketId(requesterId as string);
+
+    io.to(userSocketId).emit("userAcceptFriendRequest", updatedUser);
+    io.to(requesterSocketId).emit(
+      "userAcceptFriendRequestUpdateRequester",
+      updatedRequester
+    );
   } catch (error) {
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
@@ -307,6 +351,20 @@ export const rejectFriendRequestIntoDB = async (
         $pull: { friendRequestsSent: userId },
       }),
     ]);
+
+    const [updatedUser, updatedRequester] = await Promise.all([
+      User.findById(userId),
+      User.findById(requesterId),
+    ]);
+
+    const userSocketId = getSocketId(userId as string);
+    const requesterSocketId = getSocketId(requesterId as string);
+
+    io.to(userSocketId).emit("userRejectFriendRequest", updatedUser);
+    io.to(requesterSocketId).emit(
+      "userRejectFriendRequestUpdateRequester",
+      updatedRequester
+    );
   } catch (error) {
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,

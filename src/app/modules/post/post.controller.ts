@@ -53,9 +53,9 @@ const getAllPost = catchAsync(async (req, res) => {
 });
 
 const updateLikes = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const { userId, postId } = req.body;
-  const result = await PostServices.updateLikesIntoDB(userId, postId);
+  // const { userId, postId } = req.body;
+  const { postId, likes, dislikes } = req.body;
+  const result = await PostServices.updateLikesIntoDB(postId, likes, dislikes);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -65,9 +65,9 @@ const updateLikes = catchAsync(async (req, res) => {
   });
 });
 const updateDislikes = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const { userId, postId } = req.body;
-  const result = await PostServices.updateDislikesIntoDB(userId, postId);
+  // const { userId, postId } = req.body;
+  const { postId, dislikes } = req.body;
+  const result = await PostServices.updateDislikesIntoDB(postId, dislikes);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -1,6 +1,6 @@
-import { server } from "./app/socketOi";
 import config from "./app/config";
 import mongoose from "mongoose";
+import { server } from "./app/socket.io";
 
 // let server: Server;
 

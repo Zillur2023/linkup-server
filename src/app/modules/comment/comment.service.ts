@@ -23,7 +23,7 @@ const createCommentIntoDB = async (payload: IComment) => {
     // Add the upvote
     await Post.findByIdAndUpdate(
       payload.postId,
-      { $addToSet: { comments:  comment?._id} },
+      { $addToSet: { comments: comment?._id } },
       { new: true }
     );
   }
@@ -31,31 +31,33 @@ const createCommentIntoDB = async (payload: IComment) => {
   return await Comment.find();
 };
 
-const getAllCommentFromDB = async (postId:string) => {
+const getAllCommentFromDB = async (postId: string) => {
+  const result = await Comment.find({ postId })
+    .populate("userId")
+    .sort({ createdAt: -1 });
 
-  const result = await Comment.find({postId}).populate("userId").sort({ createdAt: -1 });
-  
-  return result
-}
+  return result;
+};
 
 const updateCommentIntoDB = async (payload: IComment) => {
-    const result = await Comment.findByIdAndUpdate(
-        payload._id,
-        { $set: payload }, // Use $set to specify the fields to update
-        {
-          new: true, // Return the updated document
-          runValidators: true, // Ensure validation rules are followed
-        }
-      );
-    
-      if (!result) {
-        throw new AppError(httpStatus.NOT_FOUND, "Comment not found");
-      }
-    
-    return result
+  const result = await Comment.findByIdAndUpdate(
+    payload._id,
+    { $set: payload }, // Use $set to specify the fields to update
+    {
+      new: true, // Return the updated document
+      runValidators: true, // Ensure validation rules are followed
+    }
+  );
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, "Comment not found");
+  }
+
+  return result;
 };
 const deleteCommentIntoDB = async (commentId: string) => {
-    const result = await Comment.findByIdAndDelete(commentId);
+  const result = await Comment.findByIdAndDelete(commentId);
+  console.log({ result });
 
   if (!result) {
     throw new AppError(httpStatus.NOT_FOUND, "Comment not found");
@@ -68,5 +70,5 @@ export const CommentServices = {
   createCommentIntoDB,
   getAllCommentFromDB,
   updateCommentIntoDB,
-  deleteCommentIntoDB
+  deleteCommentIntoDB,
 };
