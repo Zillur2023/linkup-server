@@ -95,12 +95,10 @@ export const createChatIntoDB = async (
       // .populate("messages")
       .populate({
         path: "messages",
-        // options: { sort: { updatedAt: -1 } },
-        populate: {
-          path: "senderId",
-          model: "User",
-        },
-      });
+        populate: { path: "senderId", model: "User" },
+      })
+      .populate("senderId")
+      .populate("receiverId");
 
     Promise.all([
       User.findByIdAndUpdate(senderId.toString(), {
@@ -181,14 +179,14 @@ const getChatbyUserIdFromDB = async (senderId: string, receiverId?: string) => {
           { senderId, receiverId },
           { senderId: receiverId, receiverId: senderId },
         ],
-      }).populate([
-        { path: "senderId" },
-        { path: "receiverId" },
-        {
+      })
+        .sort({ updatedAt: -1 })
+        .populate({
           path: "messages",
-          options: { sort: { createdAt: -1 } },
-        },
-      ]);
+          populate: { path: "senderId", model: "User" },
+        })
+        .populate("senderId")
+        .populate("receiverId");
 
       return [chat];
     }

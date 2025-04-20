@@ -2,13 +2,17 @@ import { Server } from "socket.io";
 import http from "http";
 import config from "../config";
 import app from "../../app";
-import { chatHandler, handleTypingEvents } from "./chatHandler";
-import { likeDislikeHandler } from "./likeDislikeHandler";
-import Post from "../modules/post/post.model";
-import Comment from "../modules/comment/comment.model";
-import { commentHandler } from "./commentHandler";
+import cors from "cors";
+import express, { Application } from "express";
+// import { chatHandler } from "./chatHandler";
+// import { likeDislikeHandler } from "./likeDislikeHandler";
+// import { commentHandler } from "./commentHandler";
 
+// const app: Application = express();
 const server = http.createServer(app);
+
+// app.use(cors({ origin: [config.client_url as string], credentials: true }));
+
 const io = new Server(server, {
   cors: {
     origin: config.client_url,
@@ -33,9 +37,9 @@ io.on("connection", (socket) => {
   io.emit("getOnlineUsers", Object.keys(users));
 
   // Handle typing events in the separate module
-  chatHandler(io, socket);
-  likeDislikeHandler(io, socket);
-  commentHandler(io, socket);
+  // chatHandler(io, socket);
+  // likeDislikeHandler(io, socket);
+  // commentHandler(io, socket);
 
   socket.on("disconnect", () => {
     console.log("a user disconnected", socket.id);
